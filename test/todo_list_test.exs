@@ -7,11 +7,14 @@ defmodule TodoListTest do
   end
 
   test "simple todo list" do
-    todo_list = TodoList.new
-      |> TodoList.add_entry(~D[2018-01-01], "Dinner")
-      |> TodoList.add_entry(~D[2018-01-02], "Dentist")
+    entry = %{date: ~D[2018-01-01], title: "Dinner"}
+    another_entry = %{date: ~D[2018-01-02], title: "Dentist"}
 
-    assert ["Dinner"] == TodoList.entries(todo_list, ~D[2018-01-01])
+    todo_list = TodoList.new
+      |> TodoList.add_entry(entry)
+      |> TodoList.add_entry(another_entry)
+
+    assert [entry] == TodoList.entries(todo_list, ~D[2018-01-01])
     assert [] == TodoList.entries(todo_list, ~D[2018-01-03])
   end
 end
