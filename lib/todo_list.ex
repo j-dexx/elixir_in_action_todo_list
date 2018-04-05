@@ -1,16 +1,14 @@
 defmodule TodoList do
-  @moduledoc """
-  Documentation for TodoList.
-  """
+  defstruct auto_id: 1, entries: %{}
 
   def new(), do: %{}
 
-  def add_entry(todo_list, date, title) do
+  def add_entry(todo_list, entry) do
     Map.update(
       todo_list,
-      date,
-      [title],
-      fn titles -> [title | titles] end
+      entry.date,
+      [entry],
+      fn entries -> [entry | entries] end
     )
   end
 
