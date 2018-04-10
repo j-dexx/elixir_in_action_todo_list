@@ -41,4 +41,18 @@ defmodule TodoListTest do
              |> TodoList.delete_entry(1)
              |> TodoList.entries(~D[2018-01-01])
   end
+
+  test "instantiate with multiple entries" do
+    entries = [
+      %{date: ~D[2018-12-19], title: "Dentist"},
+      %{date: ~D[2018-12-20], title: "Shopping"},
+      %{date: ~D[2018-12-19], title: "Movies"}
+    ]
+
+    todo_list = TodoList.new(entries)
+
+    expected = [%{date: ~D[2018-12-19], id: 1, title: "Dentist"}, %{date: ~D[2018-12-19], id: 3, title: "Movies"}]
+
+    assert expected == TodoList.entries(todo_list, ~D[2018-12-19])
+  end
 end
