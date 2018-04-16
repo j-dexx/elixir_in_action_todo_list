@@ -3,7 +3,7 @@ defmodule TodoList.CsvImporterTest do
   doctest TodoList.CsvImporter
 
   test "imports CSV into todolist" do
-    csv_path = Path.expand("../support/todos.csv")
+    csv_path = Path.expand("./test/support/todos.csv")
 
     todo_list = TodoList.CsvImporter.import(csv_path)
 
