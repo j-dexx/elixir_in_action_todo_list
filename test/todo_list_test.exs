@@ -55,4 +55,22 @@ defmodule TodoListTest do
 
     assert expected == TodoList.entries(todo_list, ~D[2018-12-19])
   end
+
+  test "implementing collectable protocol" do
+    entries = [
+      %{date: ~D[2018-12-19], title: "Dentist"},
+      %{date: ~D[2018-12-20], title: "Shopping"},
+      %{date: ~D[2018-12-19], title: "Movies"}
+    ]
+
+    todo_list = for entry <- entries, into: TodoList.new(), do: entry
+
+    expected = [%{date: ~D[2018-12-19], id: 1, title: "Dentist"}, %{date: ~D[2018-12-19], id: 3, title: "Movies"}]
+
+    assert expected == TodoList.entries(todo_list, ~D[2018-12-19])
+
+    expected = [%{date: ~D[2018-12-20], id: 2, title: "Shopping"}]
+
+    assert expected == TodoList.entries(todo_list, ~D[2018-12-20])
+  end
 end
