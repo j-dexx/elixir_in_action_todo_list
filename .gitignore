@@ -23,4 +23,5 @@ erl_crash.dump
 todo_list-*.tar
 
 /.vscode
+/.elixir_ls
 
