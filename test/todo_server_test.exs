@@ -3,7 +3,8 @@ defmodule TodoServerTest do
 
   setup do
     on_exit fn ->
-      Process.unregister(:todo_server)
+      Process.whereis(:todo_server)
+      |> Process.exit(:kill)
     end
   end
 
