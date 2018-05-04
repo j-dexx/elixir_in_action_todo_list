@@ -1,6 +1,7 @@
 # TodoList
 
 **TODO: Add description**
+For the server testing also see https://hexdocs.pm/ex_unit/ExUnit.Callbacks.html#start_supervised/2
 
 ## Installation
 
