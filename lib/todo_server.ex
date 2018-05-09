@@ -1,70 +1,54 @@
 defmodule TodoServer do
   def start do
-    spawn(fn ->
-      Process.register(self(), :todo_server)
-      loop(TodoList.new())
-    end)
+    ServerProcess.start(__MODULE__)
   end
 
-  def entries(date) do
-    send(:todo_server, {:entries, self(), date})
-
-    receive do
-      {:todo_entries, entries} -> entries
-    after
-      5000 -> {:error, :timeout}
-    end
+  def entries(pid, date) do
+    ServerProcess.call(pid, {:entries, date})
   end
 
-  def add_entry(new_entry) do
-    send(:todo_server, {:add_entry, new_entry})
+  def add_entry(pid, new_entry) do
+    ServerProcess.cast(pid, {:add_entry, new_entry})
   end
 
-  def update_entry(new_entry) do
-    send(:todo_server, {:update_entry, new_entry})
+  def update_entry(pid, new_entry) do
+    ServerProcess.cast(pid, {:update_entry, new_entry})
   end
 
-  def update_entry(entry_id, updater_fun) do
-    send(:todo_server, {:update_entry, entry_id, updater_fun})
+  def update_entry(pid, entry_id, updater_fun) do
+    ServerProcess.cast(pid, {:update_entry, entry_id, updater_fun})
   end
 
-  def delete_entry(entry_id) do
-    send(:todo_server, {:delete_entry, entry_id})
+  def delete_entry(pid, entry_id) do
+    ServerProcess.cast(pid, {:delete_entry, entry_id})
   end
 
-  # Private API
-  defp loop(todo_list) do
-    new_todo_list =
-      receive do
-        message -> process_message(todo_list, message)
-      end
-
-    loop(new_todo_list)
+  def init do
+    TodoList.new
   end
 
   # List entries
-  defp process_message(todo_list, {:entries, caller, date}) do
-    send(caller, {:todo_entries, TodoList.entries(todo_list, date)})
-    todo_list
+  def handle_call({:entries, date}, todo_list) do
+    {TodoList.entries(todo_list, date), todo_list}
   end
 
   # Add entry
-  defp process_message(todo_list, {:add_entry, new_entry}) do
+  def handle_cast({:add_entry, new_entry}, todo_list) do
     TodoList.add_entry(todo_list, new_entry)
   end
 
   # Update entry with function
-  defp process_message(todo_list, {:update_entry, entry_id, updater_fun}) do
+  def handle_cast({:update_entry, entry_id, updater_fun}, todo_list) do
     TodoList.update_entry(todo_list, entry_id, updater_fun)
   end
 
   # Update entry replace entry
-  defp process_message(todo_list, {:update_entry, new_entry}) do
+  def handle_cast({:update_entry, new_entry}, todo_list) do
     TodoList.update_entry(todo_list, new_entry)
   end
 
   # Delete entry using id
-  defp process_message(todo_list, {:delete_entry, entry_id}) do
+  def handle_cast({:delete_entry, entry_id}, todo_list) do
     TodoList.delete_entry(todo_list, entry_id)
   end
 end
