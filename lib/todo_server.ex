@@ -1,54 +1,66 @@
 defmodule TodoServer do
+  use GenServer
+
   def start do
-    ServerProcess.start(__MODULE__)
+    GenServer.start(__MODULE__, nil)
   end
 
-  def entries(pid, date) do
-    ServerProcess.call(pid, {:entries, date})
+  def entries(todo_list, date) do
+    GenServer.call(todo_list, {:entries, date})
   end
 
-  def add_entry(pid, new_entry) do
-    ServerProcess.cast(pid, {:add_entry, new_entry})
+  def add_entry(todo_list, new_entry) do
+    GenServer.cast(todo_list, {:add_entry, new_entry})
   end
 
-  def update_entry(pid, new_entry) do
-    ServerProcess.cast(pid, {:update_entry, new_entry})
+  def update_entry(todo_list, new_entry) do
+    GenServer.cast(todo_list, {:update_entry, new_entry})
   end
 
-  def update_entry(pid, entry_id, updater_fun) do
-    ServerProcess.cast(pid, {:update_entry, entry_id, updater_fun})
+  def update_entry(todo_list, entry_id, updater_fun) do
+    GenServer.cast(todo_list, {:update_entry, entry_id, updater_fun})
   end
 
-  def delete_entry(pid, entry_id) do
-    ServerProcess.cast(pid, {:delete_entry, entry_id})
+  def delete_entry(todo_list, entry_id) do
+    GenServer.cast(todo_list, {:delete_entry, entry_id})
   end
 
-  def init do
-    TodoList.new
+  @impl GenServer
+  def init(_) do
+    {:ok, TodoList.new}
   end
 
   # List entries
-  def handle_call({:entries, date}, todo_list) do
-    {TodoList.entries(todo_list, date), todo_list}
+  @impl GenServer
+  def handle_call({:entries, date}, _, todo_list) do
+    {:reply, TodoList.entries(todo_list, date), todo_list}
   end
 
   # Add entry
+  @impl GenServer
   def handle_cast({:add_entry, new_entry}, todo_list) do
-    TodoList.add_entry(todo_list, new_entry)
+    new_state = TodoList.add_entry(todo_list, new_entry)
+    {:noreply, new_state}
   end
 
   # Update entry with function
+  @impl GenServer
   def handle_cast({:update_entry, entry_id, updater_fun}, todo_list) do
-    TodoList.update_entry(todo_list, entry_id, updater_fun)
+    new_state = TodoList.update_entry(todo_list, entry_id, updater_fun)
+    {:noreply, new_state}
   end
 
   # Update entry replace entry
+  @impl GenServer
   def handle_cast({:update_entry, new_entry}, todo_list) do
-    TodoList.update_entry(todo_list, new_entry)
+    new_state = TodoList.update_entry(todo_list, new_entry)
+    {:noreply, new_state}
   end
 
   # Delete entry using id
+  @impl GenServer
   def handle_cast({:delete_entry, entry_id}, todo_list) do
-    TodoList.delete_entry(todo_list, entry_id)
+    new_state = TodoList.delete_entry(todo_list, entry_id)
+    {:noreply, new_state}
   end
 end
