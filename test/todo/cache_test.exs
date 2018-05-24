@@ -1,6 +1,18 @@
 defmodule Todo.CacheTest do
   use ExUnit.Case
 
+  setup do
+    on_exit fn ->
+      db_path = Path.expand('persist')
+
+      db_path
+      |> File.rm_rf()
+
+      db_path
+      |> File.mkdir_p()
+    end
+  end
+
   test "server_process" do
     {:ok, cache} = Todo.Cache.start()
     bob_pid = Todo.Cache.server_process(cache, "bob")
