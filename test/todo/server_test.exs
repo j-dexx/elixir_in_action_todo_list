@@ -55,7 +55,6 @@ defmodule Todo.ServerTest do
 
     assert [] == Todo.Server.entries(pid, ~D[2018-01-01])
 
-   # Process.exit(db_pid, :kill)
-   # Process.exit(pid, :kill)
+    Process.exit(pid, :kill)
   end
 end
