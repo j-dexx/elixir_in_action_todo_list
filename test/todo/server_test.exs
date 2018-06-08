@@ -2,10 +2,9 @@ defmodule Todo.ServerTest do
   use ExUnit.Case
 
   setup do
-    Todo.Database.start()
+    Todo.Database.start_link('a')
 
     on_exit fn ->
-      GenServer.stop(Todo.Database)
       db_path = Path.expand('persist')
 
       db_path
@@ -14,7 +13,7 @@ defmodule Todo.ServerTest do
   end
 
   test "adding entries" do
-    {:ok, pid} = Todo.Server.start("a")
+    {:ok, pid} = Todo.Server.start_link("a")
     Todo.Server.add_entry(pid, %{date: ~D[2018-01-01], title: "Dinner"})
     Todo.Server.add_entry(pid, %{date: ~D[2018-01-02], title: "Dentist"})
     Todo.Server.add_entry(pid, %{date: ~D[2018-01-02], title: "Meeting"})
@@ -25,7 +24,7 @@ defmodule Todo.ServerTest do
   end
 
   test "updating entry using updater function" do
-    {:ok, pid} = Todo.Server.start("b")
+    {:ok, pid} = Todo.Server.start_link("b")
     Todo.Server.add_entry(pid, %{date: ~D[2018-01-01], title: "Dinner"})
     Todo.Server.add_entry(pid, %{date: ~D[2018-01-02], title: "Dentist"})
     Todo.Server.add_entry(pid, %{date: ~D[2018-01-02], title: "Meeting"})
@@ -38,7 +37,7 @@ defmodule Todo.ServerTest do
   end
 
   test "updating entry using new entry" do
-    {:ok, pid} = Todo.Server.start("c")
+    {:ok, pid} = Todo.Server.start_link("c")
     Todo.Server.add_entry(pid, %{date: ~D[2018-01-01], title: "Dinner"})
     Todo.Server.update_entry(pid, %{date: ~D[2018-01-01], id: 1, title: "Updated"})
 
@@ -48,8 +47,7 @@ defmodule Todo.ServerTest do
   end
 
   test "deleting entry using id" do
-    Todo.Database.start()
-    {:ok, pid} = Todo.Server.start("d")
+    {:ok, pid} = Todo.Server.start_link("d")
     Todo.Server.add_entry(pid, %{date: ~D[2018-01-01], title: "Dinner"})
     Todo.Server.delete_entry(pid, 1)
 
