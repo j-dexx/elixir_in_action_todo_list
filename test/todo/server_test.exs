@@ -2,7 +2,7 @@ defmodule Todo.ServerTest do
   use ExUnit.Case
 
   setup do
-    Todo.Database.start_link('a')
+    {:ok, pid} = Todo.System.start_link()
 
     on_exit fn ->
       db_path = Path.expand('persist')
