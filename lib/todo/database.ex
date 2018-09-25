@@ -1,42 +1,38 @@
 defmodule Todo.Database do
-  @pool_size 3
   @db_folder "./persist"
 
-  def start_link do
+  def child_spec(_) do
     File.mkdir_p!(@db_folder)
 
-    children = Enum.map(1..@pool_size, &worker_spec/1)
-    Supervisor.start_link(children, strategy: :one_for_one)
-  end
+    :poolboy.child_spec(
+      __MODULE__, # id of the child
 
-  defp worker_spec(worker_id) do
-    default_worker_spec = {Todo.DatabaseWorker, {@db_folder, worker_id}}
-    Supervisor.child_spec(default_worker_spec, id: worker_id)
-  end
+      [
+        name: {:local, __MODULE__}, # name for local registration
+        worker_module: Todo.DatabaseWorker, # module which will power each worker
+        size: 3,
+      ],
 
-  def child_spec(_) do
-    %{
-      id: __MODULE__,
-      start: {__MODULE__, :start_link, []},
-      type: :supervisor
-    }
+      [@db_folder] # list of arguments passed to start_link of each worker
+    )
   end
 
   def store(key, data) do
-    key
-    |> choose_worker()
-    |> Todo.DatabaseWorker.store(key, data)
+    # transaction makes a checkout request, invokes the lambda and returns the worker to the pool
+    :poolboy.transaction(
+      __MODULE__,
+      fn worker_pid ->
+        Todo.DatabaseWorker.store(worker_pid, key, data)
+      end
+    )
   end
 
   def get(key) do
-    key
-    |> choose_worker()
-    |> Todo.DatabaseWorker.get(key)
-  end
-
-  # Choosing a worker selects a worker_id in the range 1..@poolsize which is passed to Todo.DatabaseWorker,
-  # which then does a registry look up
-  defp choose_worker(key) do
-    :erlang.phash2(key, @pool_size) + 1
+    :poolboy.transaction(
+      __MODULE__,
+      fn worker_pid ->
+        Todo.DatabaseWorker.get(worker_pid, key)
+      end
+    )
   end
 end
